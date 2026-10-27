@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-// @ts-expect-error módulo JavaScript sem tipos
 import { gerarInstalacao } from "../../scripts/gerar-instalacao-sql.mjs";
 
 describe("arquivo de instalação do banco", () => {
