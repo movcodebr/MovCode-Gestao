@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { urlDoSite } from "@/lib/env";
 import type { EstadoFormulario } from "@/lib/formulario";
+import { mensagemErroLogin } from "@/lib/erros-login";
 import { destinoSeguro } from "@/lib/rotas";
 import { criarClienteSupabase } from "@/lib/supabase/servidor";
 
@@ -25,8 +26,7 @@ export async function entrar(_: EstadoFormulario, dados: FormData): Promise<Esta
     password: resultado.data.senha,
   });
   if (error) {
-    // Mensagem única para não revelar se o e-mail existe
-    return { erro: "E-mail ou senha incorretos.", valores };
+    return { erro: mensagemErroLogin(error), valores };
   }
   redirect(destinoSeguro(dados.get("destino")?.toString()));
 }
