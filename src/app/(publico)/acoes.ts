@@ -3,15 +3,10 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { urlDoSite } from "@/lib/env";
+import type { EstadoFormulario } from "@/lib/formulario";
 import { destinoSeguro } from "@/lib/rotas";
 import { criarClienteSupabase } from "@/lib/supabase/servidor";
 
-export type EstadoFormulario = {
-  erro?: string;
-  sucesso?: string;
-  /** Valores digitados, para o formulário não apagá-los quando há erro */
-  valores?: Record<string, string>;
-};
 
 const esquemaLogin = z.object({
   email: z.email("Informe um e-mail válido."),

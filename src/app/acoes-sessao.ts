@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { usuarioAtual } from "@/lib/auth";
 import { criarClienteSupabase } from "@/lib/supabase/servidor";
-import type { EstadoFormulario } from "./(publico)/acoes";
+import type { EstadoFormulario } from "@/lib/formulario";
 
 const esquemaSenha = z
   .object({

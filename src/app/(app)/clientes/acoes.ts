@@ -1,0 +1,51 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { usuarioAtual } from "@/lib/auth";
+import { esquemaCliente } from "@/lib/dominio/cadastros";
+import { type EstadoFormulario, errosPorCampo, mensagemErroBanco, valoresDoFormulario } from "@/lib/formulario";
+import { criarClienteSupabase } from "@/lib/supabase/servidor";
+
+const DUPLICADO = "Já existe um cliente com esse CPF/CNPJ.";
+
+/** Cadastra (id nulo) ou edita um cliente. O tipo (PF/PJ) é definido pelo banco a partir do documento. */
+export async function salvarCliente(
+  id: string | null,
+  _: EstadoFormulario,
+  dados: FormData,
+): Promise<EstadoFormulario> {
+  await usuarioAtual();
+  const valores = valoresDoFormulario(dados);
+  const resultado = esquemaCliente.safeParse(valores);
+  if (!resultado.success) {
+    return { campos: errosPorCampo(resultado.error), valores };
+  }
+  const { status, ...campos } = resultado.data;
+  const registro = { ...campos, ativo: status === "ativo" };
+  const supabase = await criarClienteSupabase();
+  const { data, error } = id
+    ? await supabase.from("clientes").update(registro).eq("id", id).select("id").single()
+    : await supabase.from("clientes").insert(registro).select("id").single();
+  if (error || !data) {
+    if (error?.code === "23505") {
+      return { campos: { documento: DUPLICADO }, valores };
+    }
+    return { erro: mensagemErroBanco(error, { duplicado: DUPLICADO }), valores };
+  }
+  revalidatePath("/clientes");
+  redirect(`/clientes/${data.id}`);
+}
+
+/**
+ * Inativa (para de gerar cobranças futuras de todas as mensalidades) ou
+ * reativa o cliente (cobranças voltam no próximo vencimento, sem retroativo).
+ */
+export async function alterarStatusCliente(id: string, ativo: boolean): Promise<EstadoFormulario> {
+  await usuarioAtual();
+  const supabase = await criarClienteSupabase();
+  const { error } = await supabase.from("clientes").update({ ativo }).eq("id", id);
+  if (error) return { erro: mensagemErroBanco(error) };
+  revalidatePath("/clientes");
+  redirect(`/clientes/${id}`);
+}

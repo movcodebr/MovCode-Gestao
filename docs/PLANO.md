@@ -101,7 +101,7 @@ MovCode-Gestao/
 │  │  │  ├─ canais/email.ts, canais/whatsapp.ts (desativado), canais/log.ts
 │  │  │  └─ backup.ts
 │  │  └─ supabase/                  clientes servidor/navegador/admin
-│  └─ middleware.ts                 bloqueia toda rota sem login
+│  └─ proxy.ts                      bloqueia toda rota sem login (no Next.js 16, "proxy" substitui "middleware")
 ├─ tests/
 │  ├─ unit/                         Vitest: regras de dominio/
 │  └─ db/                           Vitest + PGlite: migrações, restrições, views

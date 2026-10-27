@@ -54,3 +54,8 @@ export function lerReais(texto: string): Centavos {
   const total = Number(reais) * 100 + Number(decimal.padEnd(2, "0"));
   return centavos(negativo ? -total : total);
 }
+
+/** Formata centavos para campo de formulário, sem "R$": 120000 → "1.200,00". */
+export function formatarValorCampo(valor: Centavos): string {
+  return formatarReais(valor).replace("R$ ", "");
+}
