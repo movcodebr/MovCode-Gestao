@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfirmarAcao } from "@/components/ConfirmarAcao";
 import { SituacaoCliente } from "@/components/SituacaoCliente";
-import { Cartao, TituloPagina } from "@/components/ui";
+import { Cartao, LinkBotao, TituloPagina } from "@/components/ui";
 import { formatarDocumento, formatarTelefone, NOME_TIPO, type TipoCliente } from "@/lib/dominio/documento";
 import { criarClienteSupabase } from "@/lib/supabase/servidor";
 import { alterarStatusCliente, salvarCliente } from "../acoes";
@@ -75,6 +75,7 @@ export default async function PaginaCliente({ params, searchParams }: PageProps<
           </div>
         </dl>
         <div className="flex flex-wrap items-start gap-2 border-t border-borda pt-4">
+          {cliente.ativo && <LinkBotao href={`/financeiro/vendas/nova?cliente=${cliente.id}`}>Lançar venda</LinkBotao>}
           <Link
             href={`/clientes/${cliente.id}?editar`}
             className="inline-flex items-center rounded-full border border-borda px-5 py-2.5 text-sm font-semibold hover:bg-fundo"

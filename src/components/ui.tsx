@@ -32,12 +32,12 @@ export function Campo({
 }: InputHTMLAttributes<HTMLInputElement> & { rotulo: string; erro?: string; ajuda?: string }) {
   const campoId = id ?? props.name;
   return (
-    <label htmlFor={campoId} className="flex flex-col gap-1.5 text-sm">
+    <label htmlFor={campoId} className="flex min-w-0 flex-col gap-1.5 text-sm">
       <span className="text-texto-secundario">{rotulo}</span>
       <input
         id={campoId}
         aria-invalid={erro ? true : undefined}
-        className={`rounded-lg border border-borda bg-superficie px-3 py-2.5 text-base text-texto outline-none focus:border-destaque ${className}`}
+        className={`w-full min-w-0 rounded-lg border border-borda bg-superficie px-3 py-2.5 text-base text-texto outline-none focus:border-destaque ${className}`}
         {...props}
       />
       {ajuda && <span className="text-xs text-texto-secundario">{ajuda}</span>}
@@ -82,7 +82,7 @@ export function Selecao({
 }: SelectHTMLAttributes<HTMLSelectElement> & { rotulo: string; erro?: string; ajuda?: string }) {
   const campoId = id ?? props.name;
   return (
-    <label htmlFor={campoId} className="flex flex-col gap-1.5 text-sm">
+    <label htmlFor={campoId} className="flex min-w-0 flex-col gap-1.5 text-sm">
       <span className="text-texto-secundario">{rotulo}</span>
       <select
         id={campoId}

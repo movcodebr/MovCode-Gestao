@@ -59,3 +59,12 @@ export function lerReais(texto: string): Centavos {
 export function formatarValorCampo(valor: Centavos): string {
   return formatarReais(valor).replace("R$ ", "");
 }
+
+/** Como lerReais, mas devolve null em vez de erro (para cálculos enquanto o usuário digita). */
+export function tentarLerReais(texto: string): Centavos | null {
+  try {
+    return lerReais(texto);
+  } catch {
+    return null;
+  }
+}

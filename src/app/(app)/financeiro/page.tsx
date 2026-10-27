@@ -1,6 +1,6 @@
 import { TituloPagina } from "@/components/ui";
 
-// Tela provisória: implementada na fase 3 (lançamentos) e 5 (dashboard) do plano (docs/PLANO.md).
-export default function Pagina() {
-  return <TituloPagina descricao="Em construção.">Financeiro</TituloPagina>;
+// Dashboard: implementado na fase 5 do plano (docs/PLANO.md).
+export default function PaginaFinanceiro() {
+  return <TituloPagina descricao="O dashboard chega na próxima fase. Use as abas acima para lançar vendas e gastos.">Financeiro</TituloPagina>;
 }
