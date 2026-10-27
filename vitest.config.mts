@@ -3,7 +3,11 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   resolve: {
-    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // "server-only" só existe para o Next.js; nos testes vira um módulo vazio
+      "server-only": fileURLToPath(new URL("./tests/vazio.ts", import.meta.url)),
+    },
   },
   test: {
     environment: "node",

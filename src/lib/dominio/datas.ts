@@ -72,3 +72,13 @@ export function adicionarMeses(data: DataISO, meses: number): DataISO {
   const novoMes = (total % 12) + 1;
   return montarData(novoAno, novoMes, Math.min(dia, ultimoDiaDoMes(novoAno, novoMes)));
 }
+
+/** Soma (ou subtrai) dias corridos a uma data. */
+export function somarDias(data: DataISO, dias: number): DataISO {
+  return new Date(Date.parse(`${data}T12:00:00Z`) + dias * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** Dias corridos de `de` até `ate` (positivo se `ate` for depois). */
+export function diasEntre(de: DataISO, ate: DataISO): number {
+  return Math.round((Date.parse(`${ate}T12:00:00Z`) - Date.parse(`${de}T12:00:00Z`)) / 86_400_000);
+}

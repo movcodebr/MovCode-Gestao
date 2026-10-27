@@ -82,7 +82,7 @@ export default async function PaginaLancamentos({ searchParams }: PageProps<"/fi
 
       {erro && <Mensagem tipo="erro">Não foi possível carregar os lançamentos.</Mensagem>}
 
-      <div className="mb-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+      <div className="mb-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
         <span>
           Entradas: <strong className="text-sucesso tabular-nums">{formatarReais(entradas)}</strong>
         </span>
@@ -90,6 +90,20 @@ export default async function PaginaLancamentos({ searchParams }: PageProps<"/fi
           Saídas: <strong className="text-perigo tabular-nums">{formatarReais(saidas)}</strong>
         </span>
         <span className="text-texto-secundario">{linhas.length} lançamento(s)</span>
+        <span className="flex gap-2 sm:ml-auto">
+          <a
+            href={`/api/exportar/xlsx?${new URLSearchParams(filtrosParaUrl(filtros))}`}
+            className="rounded-full border border-borda px-3 py-1.5 text-xs font-medium hover:border-destaque hover:text-destaque"
+          >
+            Exportar Excel
+          </a>
+          <a
+            href={`/api/exportar/pdf?${new URLSearchParams(filtrosParaUrl(filtros))}`}
+            className="rounded-full border border-borda px-3 py-1.5 text-xs font-medium hover:border-destaque hover:text-destaque"
+          >
+            Exportar PDF
+          </a>
+        </span>
       </div>
 
       <ul className="divide-y divide-borda overflow-hidden rounded-2xl border border-borda">

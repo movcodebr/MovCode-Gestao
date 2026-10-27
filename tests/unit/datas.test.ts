@@ -24,3 +24,14 @@ describe("meses curtos", () => {
     expect(ultimoDiaDoMes(2026, 2)).toBe(28);
   });
 });
+
+import { diasEntre, somarDias } from "@/lib/dominio/datas";
+
+describe("dias corridos", () => {
+  it("soma e conta dias atravessando meses e anos", () => {
+    expect(somarDias("2026-10-27", 30)).toBe("2026-11-26");
+    expect(somarDias("2026-12-31", 1)).toBe("2027-01-01");
+    expect(diasEntre("2026-02-10", "2026-03-12")).toBe(30);
+    expect(diasEntre("2026-03-12", "2026-02-10")).toBe(-30);
+  });
+});

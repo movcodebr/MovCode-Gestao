@@ -16,6 +16,9 @@
   --sucesso: #22c55e;
   --alerta: #facc15;
   --perigo: #ef4444;
+  /* Gráfico: par validado para daltonismo no fundo escuro (dataviz validate_palette) */
+  --grafico-entradas: #f0581f;
+  --grafico-saidas: #4a86d8;
   color-scheme: dark;
 }
 
@@ -31,6 +34,8 @@
   --color-sucesso: var(--sucesso);
   --color-alerta: var(--alerta);
   --color-perigo: var(--perigo);
+  --color-grafico-entradas: var(--grafico-entradas);
+  --color-grafico-saidas: var(--grafico-saidas);
   --font-sans: var(--fonte-texto);
   --font-titulo: var(--fonte-titulo);
 }
