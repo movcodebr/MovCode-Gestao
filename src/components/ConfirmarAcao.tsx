@@ -11,6 +11,8 @@ type Props = {
   mensagem: string;
   rotuloConfirmar?: string;
   variante?: "primario" | "secundario" | "perigo";
+  /** Botão menor, para usar ao lado de links pequenos em listas */
+  compacto?: boolean;
   acao: (estado: EstadoFormulario, dados: FormData) => Promise<EstadoFormulario>;
 };
 
@@ -21,6 +23,7 @@ export function ConfirmarAcao({
   mensagem,
   rotuloConfirmar = "Confirmar",
   variante = "secundario",
+  compacto = false,
   acao,
 }: Props) {
   const janela = useRef<HTMLDialogElement>(null);
@@ -28,7 +31,12 @@ export function ConfirmarAcao({
 
   return (
     <>
-      <Botao type="button" variante={variante} onClick={() => janela.current?.showModal()}>
+      <Botao
+        type="button"
+        variante={variante}
+        className={compacto ? "px-3! py-1.5! text-xs!" : ""}
+        onClick={() => janela.current?.showModal()}
+      >
         {rotulo}
       </Botao>
       {estado.erro && <Mensagem tipo="erro">{estado.erro}</Mensagem>}
