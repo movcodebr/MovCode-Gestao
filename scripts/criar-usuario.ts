@@ -31,7 +31,8 @@ async function perguntar(pergunta: string, oculto = false): Promise<string> {
 }
 
 async function main() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // Só o endereço base do projeto, mesmo que tenham colado /rest/v1 junto
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL.trim()).origin : "";
   const chave = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !chave) {
     console.error("Configure NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no .env.local.");
