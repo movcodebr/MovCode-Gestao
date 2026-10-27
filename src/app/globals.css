@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/*
+ * Tema da Mov Code — todas as cores da marca ficam aqui.
+ * Para trocar uma cor, altere apenas este bloco.
+ */
+:root {
+  --fundo: #111214;
+  --superficie: #1a1b1e;
+  --borda: #2d2f31;
+  --texto: #ffffff;
+  --texto-secundario: #b7bac2;
+  --destaque: #ff5a1f;
+  --destaque-hover: #ff7340;
+  --texto-sobre-destaque: #111214;
+  --sucesso: #22c55e;
+  --alerta: #facc15;
+  --perigo: #ef4444;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-fundo: var(--fundo);
+  --color-superficie: var(--superficie);
+  --color-borda: var(--borda);
+  --color-texto: var(--texto);
+  --color-texto-secundario: var(--texto-secundario);
+  --color-destaque: var(--destaque);
+  --color-destaque-hover: var(--destaque-hover);
+  --color-texto-sobre-destaque: var(--texto-sobre-destaque);
+  --color-sucesso: var(--sucesso);
+  --color-alerta: var(--alerta);
+  --color-perigo: var(--perigo);
+  --font-sans: var(--fonte-texto);
+  --font-titulo: var(--fonte-titulo);
+}
+
+body {
+  background: var(--fundo);
+  color: var(--texto);
+}
