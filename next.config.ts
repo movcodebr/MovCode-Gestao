@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Cache Components desligado: todas as telas mostram dados financeiros do
+  // usuário logado e precisam estar sempre atualizadas (renderização dinâmica).
+  cacheComponents: false,
   turbopack: {
     rules: {
       "*.css": {

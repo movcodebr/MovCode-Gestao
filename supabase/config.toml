@@ -1,0 +1,12 @@
+# Configuração para o Supabase CLI (desenvolvimento local).
+# Em produção, as mesmas opções são ajustadas no painel do Supabase (ver README).
+project_id = "movcode-gestao"
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/confirmar"]
+# Cadastro público desativado: só usuários criados internamente entram
+enable_signup = false
+
+[auth.email]
+enable_signup = false
