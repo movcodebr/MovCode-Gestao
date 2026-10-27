@@ -18,5 +18,7 @@ describe("acesso às rotas", () => {
     expect(destinoSeguro("https://golpe.com")).toBe("/inicio");
     expect(destinoSeguro("//golpe.com")).toBe("/inicio");
     expect(destinoSeguro("/\\golpe.com")).toBe("/inicio");
+    expect(destinoSeguro("/\t/golpe.com")).toBe("/inicio");
+    expect(destinoSeguro("/\n/golpe.com")).toBe("/inicio");
   });
 });

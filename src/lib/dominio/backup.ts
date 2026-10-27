@@ -29,11 +29,14 @@ export function caminhoBackup(tipo: "diario" | "mensal" | "manual", hoje: DataIS
   return `diario/${hoje}.json.gz`;
 }
 
+/** Tamanho máximo do backup descompactado (evita arquivo "bomba" que estoura a memória) */
+const LIMITE_DESCOMPACTADO = 200 * 1024 * 1024;
+
 /** Lê um arquivo de backup (.json ou .json.gz) e confere se é deste sistema. */
 export function lerArquivoBackup(conteudo: Buffer): Record<string, unknown> {
   let texto: string;
   try {
-    texto = (conteudo[0] === 0x1f && conteudo[1] === 0x8b ? gunzipSync(conteudo) : conteudo).toString("utf8");
+    texto = (conteudo[0] === 0x1f && conteudo[1] === 0x8b ? gunzipSync(conteudo, { maxOutputLength: LIMITE_DESCOMPACTADO }) : conteudo).toString("utf8");
   } catch {
     throw new Error("Não foi possível abrir o arquivo de backup.");
   }
