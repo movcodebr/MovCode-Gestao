@@ -28,6 +28,7 @@ const rodar = (hoje: string) =>
     buscar: ipcaFalso,
     canais: () => [canalSomenteLog("email")],
     pagamento: { chavePix: "chave-teste", favorecido: "Teste" },
+    emailBackup: async () => ({ ok: true }),
   });
 
 function cobrancas(mensalidade: string): string[] {

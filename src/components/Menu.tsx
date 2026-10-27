@@ -12,6 +12,7 @@ const ITENS = [
   { href: "/produtos", rotulo: "Produtos" },
   { href: "/clientes", rotulo: "Clientes" },
   { href: "/documentos", rotulo: "Documentos" },
+  { href: "/backup", rotulo: "Backup" },
 ];
 
 /** Menu lateral no computador; no celular vira barra superior com botão. */

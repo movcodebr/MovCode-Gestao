@@ -184,7 +184,7 @@ Todas as tabelas com RLS ligado: leitura e escrita só para `authenticated` (os 
   - várias cobranças do mesmo cliente no mesmo dia → **um** e-mail listando todas;
   - cada canal registrado separadamente; falha em um não impede o outro;
   - lembretes que cairiam na pausa não são reenviados depois (o calendário é sempre relativo ao vencimento);
-  - em desenvolvimento (`LEMBRETES_MODO=log`) nada é enviado, só registrado.
+  - em desenvolvimento (`EMAILS_MODO=log`) nada é enviado, só registrado.
 - **Rotina diária (9h)**, nesta ordem: 1) atualizar cache do IPCA; 2) gerar cobranças de mensalidades (com reajustes); 3) gerar gastos recorrentes; 4) enviar lembretes; 5) backup diário (+ mensal no dia 1º). Cada passo registra seu resultado; falha de um não impede os seguintes.
 
 ---

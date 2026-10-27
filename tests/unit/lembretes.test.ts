@@ -221,15 +221,15 @@ describe("envio e registro", () => {
 
 describe("modo de envio", () => {
   it("em desenvolvimento nunca envia de verdade (só registra)", () => {
-    expect(canaisAtivos({ NODE_ENV: "development", LEMBRETES_MODO: "real" }).map((c) => c.modo)).toEqual(["log"]);
+    expect(canaisAtivos({ NODE_ENV: "development", EMAILS_MODO: "real" }).map((c) => c.modo)).toEqual(["log"]);
     expect(canaisAtivos({ NODE_ENV: "production" }).map((c) => c.modo)).toEqual(["log"]);
   });
 
-  it("em produção com LEMBRETES_MODO=real usa o e-mail e exige as configurações", () => {
-    expect(() => canaisAtivos({ NODE_ENV: "production", LEMBRETES_MODO: "real" })).toThrow(/RESEND_API_KEY/);
+  it("em produção com EMAILS_MODO=real usa o e-mail e exige as configurações", () => {
+    expect(() => canaisAtivos({ NODE_ENV: "production", EMAILS_MODO: "real" })).toThrow(/RESEND_API_KEY/);
     const canais = canaisAtivos({
       NODE_ENV: "production",
-      LEMBRETES_MODO: "real",
+      EMAILS_MODO: "real",
       RESEND_API_KEY: "re_x",
       EMAIL_REMETENTE: "contato@movcode.com.br",
       PAGAMENTO_PIX_CHAVE: "x",

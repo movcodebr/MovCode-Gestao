@@ -4,6 +4,7 @@ import type { Mes } from "@/lib/dominio/reajuste";
 import type { CanalEnvio } from "@/lib/lembretes/canais";
 import type { DadosPagamento } from "@/lib/lembretes/mensagens";
 import { gerarCobrancas, gerarGastosRecorrentes } from "./cobrancas";
+import { type EnviarEmailBackup, rotinaBackup } from "./backup";
 import { executarLembretes } from "./lembretes";
 import { atualizarIpca, carregarIpca } from "./ipca-bcb";
 
@@ -21,11 +22,17 @@ async function etapa(nome: string, fn: () => Promise<unknown>): Promise<Resultad
  * Rotina diária (9h de Brasília). A falha de uma etapa não impede as seguintes.
  * 1) IPCA do Banco Central  2) cobranças das mensalidades (com reajustes)  3) gastos recorrentes
  * 4) lembretes de cobrança (depois das cobranças, para incluir as que vencem hoje)
+ * 5) backup diário (e o mensal, com cópia por e-mail, na primeira rotina do mês)
  */
 export async function executarTarefaDiaria(
   supabase: SupabaseClient,
   hoje: DataISO,
-  opcoes: { buscar?: typeof fetch; canais?: () => CanalEnvio[]; pagamento?: DadosPagamento } = {},
+  opcoes: {
+    buscar?: typeof fetch;
+    canais?: () => CanalEnvio[];
+    pagamento?: DadosPagamento;
+    emailBackup?: EnviarEmailBackup;
+  } = {},
 ): Promise<ResultadoEtapa[]> {
   const buscar = opcoes.buscar ?? fetch;
   const resultados: ResultadoEtapa[] = [];
@@ -53,6 +60,12 @@ export async function executarTarefaDiaria(
       const r = await executarLembretes(supabase, hoje, opcoes.canais(), opcoes.pagamento);
       if (r.falhas > 0) throw new Error(r.erros.join(" | "));
       return r;
+    }),
+  );
+  resultados.push(
+    await etapa("backup", async () => {
+      if (!opcoes.emailBackup) throw new Error("Envio do backup mensal não configurado.");
+      return rotinaBackup(supabase, hoje, opcoes.emailBackup);
     }),
   );
   return resultados;
