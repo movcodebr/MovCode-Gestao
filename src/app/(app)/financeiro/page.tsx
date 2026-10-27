@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { FiltroPeriodo } from "@/components/FiltroPeriodo";
 import { Cartao, Mensagem, TituloPagina } from "@/components/ui";
 import { carregarDashboard, type ItemAgenda } from "@/lib/consultas/dashboard";
+import { resumoLembretes } from "@/lib/consultas/lembretes";
 import { lerFiltros } from "@/lib/consultas/lancamentos";
 import { formatarData } from "@/lib/dominio/datas";
 import { formatarReais } from "@/lib/dominio/dinheiro";
@@ -66,7 +67,10 @@ function Agenda({ itens, vazio }: { itens: ItemAgenda[]; vazio: string }) {
 export default async function PaginaDashboard({ searchParams }: PageProps<"/financeiro">) {
   const filtros = lerFiltros(await searchParams);
   const supabase = await criarClienteSupabase();
-  const d = await carregarDashboard(supabase, filtros.periodo, filtros.ref);
+  const [d, lembretes] = await Promise.all([
+    carregarDashboard(supabase, filtros.periodo, filtros.ref),
+    resumoLembretes(supabase),
+  ]);
   const { periodo, ref } = filtros;
 
   return (
@@ -164,6 +168,49 @@ export default async function PaginaDashboard({ searchParams }: PageProps<"/fina
                       {c.email}
                     </a>
                   </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Secao>
+      </div>
+
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        <Secao titulo="Falhas de envio de lembretes" extra={<span className="text-xs text-texto-secundario">últimos 30 dias</span>}>
+          {lembretes.falhas.length === 0 ? (
+            <p className="text-sm text-texto-secundario">Nenhuma falha de envio.</p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-borda text-sm">
+              {lembretes.falhas.map((f) => (
+                <li key={`${f.clienteId}-${f.data}-${f.canal}`} className="flex flex-col gap-0.5 py-2">
+                  <span className="flex justify-between gap-3">
+                    <Link href={`/clientes/${f.clienteId}`} className="hover:text-destaque">
+                      {f.cliente}
+                    </Link>
+                    <span className="text-texto-secundario">
+                      {formatarData(f.data)} · {f.canal === "email" ? "E-mail" : "WhatsApp"}
+                    </span>
+                  </span>
+                  <span className="break-words text-xs text-perigo">{f.erro}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Secao>
+        <Secao titulo="Lembretes pausados">
+          {lembretes.pausados.length === 0 ? (
+            <p className="text-sm text-texto-secundario">Nenhum cliente com lembretes pausados.</p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-borda text-sm">
+              {lembretes.pausados.map((p) => (
+                <li key={p.clienteId} className="flex flex-col gap-0.5 py-2">
+                  <span className="flex justify-between gap-3">
+                    <Link href={`/clientes/${p.clienteId}`} className="hover:text-destaque">
+                      {p.cliente}
+                    </Link>
+                    <span>até {formatarData(p.ate)}</span>
+                  </span>
+                  {p.motivo && <span className="text-xs text-texto-secundario">{p.motivo}</span>}
                 </li>
               ))}
             </ul>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth";
 import { esquemaCliente } from "@/lib/dominio/cadastros";
+import { dataValida } from "@/lib/dominio/datas";
 import { type EstadoFormulario, errosPorCampo, mensagemErroBanco, valoresDoFormulario } from "@/lib/formulario";
 import { criarClienteSupabase } from "@/lib/supabase/servidor";
 
@@ -61,5 +62,32 @@ export async function cancelarMensalidade(id: string, clienteId: string): Promis
   if (error) return { erro: mensagemErroBanco(error) };
   revalidatePath("/clientes");
   revalidatePath("/financeiro", "layout");
+  redirect(`/clientes/${clienteId}`);
+}
+
+/** Pausa todos os lembretes do cliente até a data final (as cobranças não mudam). */
+export async function pausarLembretes(clienteId: string, _: EstadoFormulario, dados: FormData): Promise<EstadoFormulario> {
+  await usuarioAtual();
+  const fim = String(dados.get("fim") ?? "");
+  const motivo = String(dados.get("motivo") ?? "").trim().slice(0, 300);
+  if (!dataValida(fim)) return { erro: "Informe a data final da pausa.", valores: { fim, motivo } };
+  const supabase = await criarClienteSupabase();
+  const { error } = await supabase.rpc("pausar_lembretes", { p_cliente_id: clienteId, p_fim: fim, p_motivo: motivo });
+  if (error) {
+    return { erro: error.code === "P0001" ? error.message : mensagemErroBanco(error), valores: { fim, motivo } };
+  }
+  revalidatePath("/clientes", "layout");
+  revalidatePath("/financeiro");
+  redirect(`/clientes/${clienteId}`);
+}
+
+/** Retoma os lembretes antes da data final. Lembretes que cairiam na pausa não são reenviados. */
+export async function retomarLembretes(clienteId: string): Promise<EstadoFormulario> {
+  await usuarioAtual();
+  const supabase = await criarClienteSupabase();
+  const { error } = await supabase.rpc("retomar_lembretes", { p_cliente_id: clienteId });
+  if (error) return { erro: error.code === "P0001" ? error.message : mensagemErroBanco(error) };
+  revalidatePath("/clientes", "layout");
+  revalidatePath("/financeiro");
   redirect(`/clientes/${clienteId}`);
 }

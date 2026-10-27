@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { hojeEmBrasilia } from "@/lib/dominio/datas";
+import { canaisAtivos } from "@/lib/lembretes/canais";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { executarTarefaDiaria } from "@/lib/servicos/tarefa-diaria";
 
@@ -22,7 +23,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ erro: "Não autorizado" }, { status: 401 });
   }
   const hoje = hojeEmBrasilia();
-  const etapas = await executarTarefaDiaria(criarClienteAdmin(), hoje);
+  const etapas = await executarTarefaDiaria(criarClienteAdmin(), hoje, {
+    canais: () => canaisAtivos(),
+    pagamento: {
+      chavePix: process.env.PAGAMENTO_PIX_CHAVE ?? "",
+      favorecido: process.env.PAGAMENTO_PIX_NOME ?? "",
+    },
+  });
   const ok = etapas.every((e) => e.ok);
   console.log(JSON.stringify({ rotina: "diaria", hoje, ok, etapas }));
   return NextResponse.json({ hoje, ok, etapas }, { status: ok ? 200 : 500 });

@@ -5,10 +5,13 @@ import { ConfirmarAcao } from "@/components/ConfirmarAcao";
 import { SituacaoCliente } from "@/components/SituacaoCliente";
 import { Cartao, LinkBotao, TituloPagina } from "@/components/ui";
 import { formatarDocumento, formatarTelefone, NOME_TIPO, type TipoCliente } from "@/lib/dominio/documento";
+import { lembretesDoCliente } from "@/lib/consultas/lembretes";
 import { mensalidadesDoCliente } from "@/lib/consultas/mensalidades";
+import { hojeEmBrasilia } from "@/lib/dominio/datas";
 import { criarClienteSupabase } from "@/lib/supabase/servidor";
 import { alterarStatusCliente, salvarCliente } from "../acoes";
 import { FormularioCliente } from "../FormularioCliente";
+import { Lembretes } from "./Lembretes";
 import { Mensalidades } from "./Mensalidades";
 
 export const metadata: Metadata = { title: "Cliente — Mov Code" };
@@ -98,8 +101,9 @@ export default async function PaginaCliente({ params, searchParams }: PageProps<
           />
         </div>
       </Cartao>
-      <div className="mt-6">
+      <div className="mt-6 flex flex-col gap-6">
         <Mensalidades mensalidades={await mensalidadesDoCliente(supabase, cliente.id)} clienteId={cliente.id} />
+        <Lembretes clienteId={cliente.id} ativo={cliente.ativo} hoje={hojeEmBrasilia()} {...await lembretesDoCliente(supabase, cliente.id)} />
       </div>
     </>
   );

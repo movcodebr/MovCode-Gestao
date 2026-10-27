@@ -6,6 +6,7 @@
 import { execSync } from "node:child_process";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { beforeAll, describe, expect, it } from "vitest";
+import { canalSomenteLog } from "@/lib/lembretes/canais";
 import { executarTarefaDiaria } from "@/lib/servicos/tarefa-diaria";
 
 const ativo = process.env.INTEGRACAO === "1";
@@ -22,7 +23,12 @@ const ipcaFalso = (async () => {
   return new Response(JSON.stringify(pontos));
 }) as unknown as typeof fetch;
 
-const rodar = (hoje: string) => executarTarefaDiaria(admin, hoje, ipcaFalso);
+const rodar = (hoje: string) =>
+  executarTarefaDiaria(admin, hoje, {
+    buscar: ipcaFalso,
+    canais: () => [canalSomenteLog("email")],
+    pagamento: { chavePix: "chave-teste", favorecido: "Teste" },
+  });
 
 function cobrancas(mensalidade: string): string[] {
   return sql(

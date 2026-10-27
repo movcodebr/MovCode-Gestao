@@ -14,6 +14,8 @@ export default defineConfig({
     include: ["tests/**/*.test.ts"],
     // Integração precisa do Supabase local: rode com npm run test:integracao
     exclude: process.env.INTEGRACAO ? [] : ["tests/integracao/**"],
+    // Os testes de integração usam o mesmo banco local: um arquivo por vez
+    fileParallelism: !process.env.INTEGRACAO,
     // Os testes de banco sobem um Postgres em memória (PGlite) e levam alguns segundos.
     testTimeout: 30_000,
     hookTimeout: 60_000,
