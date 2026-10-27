@@ -60,18 +60,20 @@ No projeto, vá em **Project Settings → API** (ou **API Keys**) e anote:
 | `service_role` / *secret* key | `SUPABASE_SERVICE_ROLE_KEY` ⚠️ **secreta**: nunca compartilhe nem coloque no código |
 
 ### 2.3 Criar as tabelas (migrações)
-As tabelas, regras de segurança e a carga inicial dos 6 produtos estão na pasta `supabase/migrations`. Há dois jeitos de aplicá-las:
+As tabelas, regras de segurança e a carga inicial dos 6 produtos estão na pasta `supabase/migrations`. Há dois jeitos de aplicá-las num projeto novo:
 
-**Jeito A — pelo terminal (recomendado)**, no seu computador, dentro da pasta do projeto:
+**Jeito A — pelo navegador (mais simples):**
+1. Abra o arquivo [`supabase/instalacao-completa.sql`](supabase/instalacao-completa.sql) no GitHub, clique no botão **Copy raw file** (ícone de copiar, no canto superior direito do arquivo).
+2. No Supabase, abra **SQL Editor** (menu da esquerda) → **New query**, cole tudo e clique em **Run**. Se aparecer um aviso de "operação destrutiva", confirme (**Run this query**): é esperado num projeto novo.
+3. Deve aparecer **Success. No rows returned**. Rode **uma vez só**.
+
+**Jeito B — pelo terminal** (útil também para aplicar migrações novas no futuro), dentro da pasta do projeto:
 ```bash
 npm install
 npx supabase login
 npx supabase link --project-ref SEU_PROJECT_REF   # o "Reference ID" em Project Settings → General
 npx supabase db push
 ```
-Confirme com `Y`. O comando aplica todos os arquivos na ordem.
-
-**Jeito B — pelo navegador:** no Supabase, abra **SQL Editor**, e para cada arquivo de `supabase/migrations` (em ordem de nome, do `...0001` ao último) cole o conteúdo e clique em **Run**.
 
 Ao final, em **Table Editor** você deve ver as tabelas (`clientes`, `produtos`, `lancamentos`…) e a tabela `produtos` com os 6 produtos do catálogo. Em **Storage** devem aparecer os espaços privados `documentos` e `backups`.
 
@@ -274,6 +276,7 @@ curl -H "Authorization: Bearer SEU_CRON_SECRET" http://localhost:3000/api/cron/d
 | `npm run test:integracao` | Testes contra o Supabase local (precisa de `npx supabase start`) |
 | `npm run verificar` | Lint + tipos + testes (o mesmo que o CI roda) |
 | `npm run criar-usuario` | Cria um usuário do sistema |
+| `npm run gerar-instalacao-sql` | Atualiza `supabase/instalacao-completa.sql` após criar uma migração |
 
 ### Organização
 ```
