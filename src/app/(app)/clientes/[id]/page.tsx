@@ -5,9 +5,11 @@ import { ConfirmarAcao } from "@/components/ConfirmarAcao";
 import { SituacaoCliente } from "@/components/SituacaoCliente";
 import { Cartao, LinkBotao, TituloPagina } from "@/components/ui";
 import { formatarDocumento, formatarTelefone, NOME_TIPO, type TipoCliente } from "@/lib/dominio/documento";
+import { mensalidadesDoCliente } from "@/lib/consultas/mensalidades";
 import { criarClienteSupabase } from "@/lib/supabase/servidor";
 import { alterarStatusCliente, salvarCliente } from "../acoes";
 import { FormularioCliente } from "../FormularioCliente";
+import { Mensalidades } from "./Mensalidades";
 
 export const metadata: Metadata = { title: "Cliente — Mov Code" };
 
@@ -96,6 +98,9 @@ export default async function PaginaCliente({ params, searchParams }: PageProps<
           />
         </div>
       </Cartao>
+      <div className="mt-6">
+        <Mensalidades mensalidades={await mensalidadesDoCliente(supabase, cliente.id)} clienteId={cliente.id} />
+      </div>
     </>
   );
 }

@@ -9,6 +9,7 @@ const ABAS = [
   { href: "/financeiro/vendas/nova", rotulo: "Lançar venda" },
   { href: "/financeiro/gastos/novo", rotulo: "Lançar gasto" },
   { href: "/financeiro/gastos/recorrentes", rotulo: "Gastos recorrentes" },
+  { href: "/financeiro/reajustes", rotulo: "Reajustes IPCA" },
 ];
 
 export function SubMenu() {

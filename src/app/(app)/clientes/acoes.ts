@@ -49,3 +49,17 @@ export async function alterarStatusCliente(id: string, ativo: boolean): Promise<
   revalidatePath("/clientes");
   redirect(`/clientes/${id}`);
 }
+
+/**
+ * Cancela uma mensalidade: para de gerar cobranças futuras só dela e sai do MRR.
+ * O cliente e as demais mensalidades continuam; cobranças já geradas ficam no histórico.
+ */
+export async function cancelarMensalidade(id: string, clienteId: string): Promise<EstadoFormulario> {
+  await usuarioAtual();
+  const supabase = await criarClienteSupabase();
+  const { error } = await supabase.from("mensalidades").update({ status: "cancelada" }).eq("id", id).eq("status", "ativa");
+  if (error) return { erro: mensagemErroBanco(error) };
+  revalidatePath("/clientes");
+  revalidatePath("/financeiro", "layout");
+  redirect(`/clientes/${clienteId}`);
+}

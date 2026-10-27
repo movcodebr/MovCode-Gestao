@@ -11,6 +11,8 @@ import {
   esquemaPagamento,
   esquemaVenda,
 } from "@/lib/dominio/lancamentos";
+import { competenciaDoMes, mesDoAniversario, montarReajuste, proximoMesACobrar } from "@/lib/dominio/mensalidades";
+import { fatorDoPercentual, janelaIpca } from "@/lib/dominio/reajuste";
 import { type EstadoFormulario, errosPorCampo, mensagemErroBanco, valoresDoFormulario } from "@/lib/formulario";
 import { criarClienteSupabase } from "@/lib/supabase/servidor";
 
@@ -195,4 +197,70 @@ export async function encerrarGastoRecorrente(id: string): Promise<EstadoFormula
   if (error) return { erro: mensagemErroBanco(error) };
   atualizarTelas();
   redirect("/financeiro/gastos/recorrentes?aviso=encerrado");
+}
+
+/**
+ * Aplica um reajuste com o IPCA acumulado informado manualmente (quando a API do Banco
+ * Central falhou). Vale a partir da próxima cobrança ainda não gerada.
+ */
+export async function aplicarReajusteManual(
+  mensalidadeId: string,
+  aniversario: number,
+  _: EstadoFormulario,
+  dados: FormData,
+): Promise<EstadoFormulario> {
+  await usuarioAtual();
+  const percentual = String(dados.get("percentual") ?? "").trim();
+  if (!/^-?\d{1,3}([.,]\d{1,6})?$/.test(percentual)) {
+    return {
+      erro: "Informe o IPCA acumulado em %, por exemplo 4,68 (use - para negativo).",
+      valores: { percentual },
+    };
+  }
+  const supabase = await criarClienteSupabase();
+  const [{ data: m }, { data: cobradas }] = await Promise.all([
+    supabase
+      .from("mensalidades")
+      .select("id, cliente_id, valor_atual_centavos, dia_vencimento, data_inicio, criado_em")
+      .eq("id", mensalidadeId)
+      .single(),
+    supabase.from("lancamentos").select("competencia").eq("mensalidade_id", mensalidadeId),
+  ]);
+  if (!m) return { erro: "Mensalidade não encontrada." };
+  const { data: cliente } = await supabase.from("clientes").select("reativado_em").eq("id", m.cliente_id).single();
+  const dadosM = {
+    dataInicio: m.data_inicio,
+    dia: m.dia_vencimento,
+    dataCadastro: hojeEmBrasilia(new Date(m.criado_em)),
+    reativadoEm: cliente?.reativado_em ?? null,
+  };
+  const valeAPartirDe = proximoMesACobrar(
+    dadosM,
+    new Set((cobradas ?? []).map((c) => String(c.competencia).slice(0, 7))),
+    hojeEmBrasilia(),
+  );
+  const janela = janelaIpca(mesDoAniversario(m.data_inicio, m.dia_vencimento, aniversario));
+  const r = montarReajuste(aniversario, fatorDoPercentual(percentual), m.valor_atual_centavos, valeAPartirDe, {
+    inicio: janela[0],
+    fim: janela[11],
+  });
+  const { error } = await supabase.rpc("aplicar_reajuste", {
+    p: {
+      mensalidade_id: mensalidadeId,
+      aniversario,
+      vale_a_partir_de: competenciaDoMes(r.valeAPartirDe),
+      janela_inicio: competenciaDoMes(r.janela.inicio),
+      janela_fim: competenciaDoMes(r.janela.fim),
+      indice_percentual: r.indicePercentual,
+      indice_aplicado: r.indiceAplicado,
+      fonte: "manual",
+      valor_anterior: r.valorAnterior,
+      valor_novo: r.valorNovo,
+    },
+  });
+  if (error) {
+    return { erro: error.code === "23505" ? "Este reajuste já foi aplicado." : mensagemDaRegra(error) };
+  }
+  atualizarTelas();
+  redirect("/financeiro/reajustes?aviso=aplicado");
 }

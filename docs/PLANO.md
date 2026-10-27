@@ -35,6 +35,8 @@
 | 25 | Excluir produto usado | Bloqueado; o produto pode ser **desativado** (some de vendas novas, permanece no histórico) |
 | 26 | Janela do IPCA | Os 12 meses que terminam 2 meses antes do mês do aniversário (ex.: aniversário em jan/2027 → dez/2025 a nov/2026). Fator = Π(1 + iₘ/100); novo valor arredondado em 2 casas, meio para cima |
 | — | Fuso horário | Todas as datas e regras usam `America/Sao_Paulo` |
+| 27 | Data de início no passado (decidido na Fase 4) | **Opção B**: nunca gerar cobrança (nem gasto recorrente) com vencimento anterior ao dia do cadastro. A data de início continua contando os aniversários do reajuste; aniversários anteriores ao cadastro são ignorados (o valor cadastrado já é o atual) |
+| 28 | Índice manual | Quando a API do BCB falha, o usuário informa o **IPCA acumulado do período** (%) na tela "Reajustes IPCA"; vale a partir da próxima cobrança ainda não gerada |
 
 ---
 
@@ -169,7 +171,7 @@ Todas as tabelas com RLS ligado: leitura e escrita só para `authenticated` (os 
 
 - **Vencimento em mês curto**: `vencimento(ano, mes, dia) = min(dia, últimoDia(ano, mes))`.
 - **Calendário da mensalidade**: 1ª cobrança = primeiro vencimento ≥ `data_inicio`; depois uma por mês. **Número da cobrança** = meses corridos desde a 1ª + 1 (calendário, não contagem de cobranças geradas — períodos de inatividade não deslocam o aniversário).
-- **Geração diária** (idempotente): para cada mensalidade `ativa` de cliente ativo, cria a cobrança de toda competência com vencimento ≤ hoje, ≥ `data_inicio` e ≥ `reativado_em` (se houver), que ainda não exista. Isso também recupera dias em que a tarefa não rodou.
+- **Geração diária** (idempotente): para cada mensalidade `ativa` de cliente ativo, cria a cobrança de toda competência com vencimento ≤ hoje, ≥ `data_inicio`, ≥ data do cadastro da venda e ≥ `reativado_em` (se houver), que ainda não exista. Isso também recupera dias em que a tarefa não rodou.
 - **Reajuste**: o aniversário *k* vale a partir da cobrança nº 12k+1. Antes de gerar essa cobrança, o sistema busca a janela IPCA (12 meses terminando 2 meses antes do mês dessa cobrança), aplica `novo = arred(valor_atual × max(fator, 1))` e grava o histórico. Sem índice disponível → cobrança sai com valor atual e o reajuste fica pendente (aviso no dashboard).
 - **Cancelar mensalidade**: `status = cancelada`, `cancelada_em = hoje`; deixa de gerar cobranças, sai do MRR; cobranças existentes permanecem.
 - **Inativar cliente**: nenhuma mensalidade dele gera cobrança; saem do MRR; nenhum lembrete. Cobranças existentes permanecem.
