@@ -5,7 +5,7 @@
 -- =====================================================================
 do $$
 begin
-  if exists (select 1 from information_schema.schemata where schema_name = 'storage') then
+  if to_regclass('storage.buckets') is not null and to_regclass('storage.objects') is not null then
     insert into storage.buckets (id, name, public, file_size_limit)
     values ('documentos', 'documentos', false, 52428800) -- 50 MB por arquivo (limite do plano gratuito)
     on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit;

@@ -102,7 +102,7 @@ grant execute on function public.restaurar_backup(jsonb) to service_role;
 -- Espaço privado para os arquivos de backup (só a chave de serviço acessa)
 do $$
 begin
-  if exists (select 1 from information_schema.schemata where schema_name = 'storage') then
+  if to_regclass('storage.buckets') is not null and to_regclass('storage.objects') is not null then
     insert into storage.buckets (id, name, public)
     values ('backups', 'backups', false)
     on conflict (id) do update set public = false;
