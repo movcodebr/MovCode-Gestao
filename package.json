@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "verificar": "npm run lint && npm run typecheck && npm test",
     "criar-usuario": "node --disable-warning=ExperimentalWarning --env-file=.env.local scripts/criar-usuario.ts",
-    "test:integracao": "INTEGRACAO=1 node --env-file=.env.local node_modules/vitest/vitest.mjs run tests/integracao"
+    "test:integracao": "INTEGRACAO=1 node --env-file=.env.local node_modules/vitest/vitest.mjs run tests/integracao",
+    "gerar-instalacao-sql": "node scripts/gerar-instalacao-sql.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
