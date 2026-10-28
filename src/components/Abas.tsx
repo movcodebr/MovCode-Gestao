@@ -3,20 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const ABAS = [
-  { href: "/financeiro", rotulo: "Dashboard", exato: true },
-  { href: "/financeiro/lancamentos", rotulo: "Lançamentos" },
-  { href: "/financeiro/vendas/nova", rotulo: "Lançar venda" },
-  { href: "/financeiro/gastos/novo", rotulo: "Lançar gasto" },
-  { href: "/financeiro/gastos/recorrentes", rotulo: "Gastos recorrentes" },
-  { href: "/financeiro/reajustes", rotulo: "Reajustes IPCA" },
-];
+export type Aba = { href: string; rotulo: string; exato?: boolean };
 
-export function SubMenu() {
+/** Abas de uma seção (Financeiro, Prospecção), logo abaixo do título. */
+export function Abas({ abas }: { abas: Aba[] }) {
   const caminho = usePathname();
   return (
     <nav className="-mx-4 mb-6 flex gap-1 overflow-x-auto border-b border-borda px-4 md:mx-0 md:px-0">
-      {ABAS.map((aba) => {
+      {abas.map((aba) => {
         const ativa = aba.exato ? caminho === aba.href : caminho.startsWith(aba.href);
         return (
           <Link

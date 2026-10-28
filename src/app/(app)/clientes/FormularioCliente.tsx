@@ -12,9 +12,11 @@ type Props = {
   acao: (estado: EstadoFormulario, dados: FormData) => Promise<EstadoFormulario>;
   inicial?: Valores;
   voltarPara: string;
+  /** Lead da prospecção que virou este cliente (cadastro a partir do lead) */
+  leadId?: string;
 };
 
-export function FormularioCliente({ acao, inicial, voltarPara }: Props) {
+export function FormularioCliente({ acao, inicial, voltarPara, leadId }: Props) {
   const [estado, enviar, enviando] = useActionState(acao, {});
   const valor = (campo: keyof Valores) => estado.valores?.[campo] ?? inicial?.[campo];
   const [documento, setDocumento] = useState(valor("documento") ?? "");
@@ -23,6 +25,7 @@ export function FormularioCliente({ acao, inicial, voltarPara }: Props) {
   return (
     <form action={enviar} className="flex max-w-2xl flex-col gap-4">
       {estado.erro && <Mensagem tipo="erro">{estado.erro}</Mensagem>}
+      {leadId && <input type="hidden" name="lead_id" value={leadId} />}
       <Campo rotulo="Nome" name="nome" defaultValue={valor("nome")} erro={estado.campos?.nome} required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Campo

@@ -2,7 +2,7 @@
 
 Legenda dos testes: `U` = `tests/unit`, `DB` = `tests/db` (Postgres em memória), `I` = `tests/integracao` (Supabase local, `npm run test:integracao`), `NAV` = verificado no navegador contra Supabase local durante o desenvolvimento (roteiro manual, não fica no repositório).
 
-Situação ao final: **147 testes automatizados** (U + DB) passando no CI, **12 testes de integração** passando contra Supabase local.
+Situação ao final: **185 testes automatizados** (U + DB) passando no CI, **12 testes de integração** passando contra Supabase local.
 
 ## Telas
 
@@ -87,6 +87,22 @@ Situação ao final: **147 testes automatizados** (U + DB) passando no CI, **12 
 | Em desenvolvimento, lembretes só registrados no log | Atendido | `canaisAtivos` / `envioRealAtivo` | U `lembretes.test.ts` › "em desenvolvimento nunca envia de verdade" |
 | Interface em português do Brasil | Atendido | todas as telas, mensagens e e-mails | NAV |
 | Layout responsivo (computador e celular) | Atendido | Tailwind; menu lateral/celular em `src/components/Menu.tsx` | NAV (sem rolagem lateral a 390 px em todas as telas) |
+
+## Prospecção
+
+| Item | Situação | Onde está | Teste |
+|---|---|---|---|
+| Leads do Instagram, um por @, com funil de 7 etapas | Atendido | `…10_prospeccao.sql` · `src/lib/dominio/prospeccao.ts` | DB `prospeccao.test.ts` › "um lead por @…", "recusa etapa desconhecida…"; U `prospeccao.test.ts` › "@ do Instagram" |
+| Fila do dia: follow-ups vencidos + melhores novos (meus ou sem responsável) | Atendido | `src/app/(app)/prospeccao/page.tsx` | U `prospeccao.test.ts` › "calendário dos follow-ups"; NAV |
+| Follow-ups em 3 e 4 dias, máximo 2, sugestão de Perdido | Atendido | `aplicarAcao` · `acoesDaVez` · `semResposta` | U `prospeccao.test.ts` › "calendário dos follow-ups" |
+| Ação registrada uma vez só (clique repetido / tela desatualizada) | Atendido | `aplicarAcao` · `registrarAcao` (grava só se etapa e follow-ups não mudaram) | U `prospeccao.test.ts` › "não registra a mesma ação duas vezes" |
+| Pipeline com filtros (etapa, responsável, busca) e lead manual | Atendido | `src/app/(app)/prospeccao/pipeline/` | U `prospeccao.test.ts` › "formulários"; NAV |
+| Configuração da busca editável na tela | Atendido | `src/app/(app)/prospeccao/configuracao/` | U `prospeccao.test.ts` › "configuração…"; DB `prospeccao.test.ts` › "configuração padrão" |
+| Busca diária grava pela API com token | Atendido | `src/app/api/prospeccao/rotina/route.ts` · `src/lib/servicos/prospeccao.ts` · `src/lib/segredo.ts` | U `segredo.test.ts`; U `prospeccao.test.ts` › "leads que chegam da busca diária"; U `rotas.test.ts`; NAV |
+| Importação do painel antigo, sem duplicar | Atendido | `importarDoPainel` · `lerExportacaoPainel` | U `prospeccao.test.ts` › "importação do painel antigo"; NAV |
+| Lead vira cliente | Atendido | `src/app/(app)/clientes/novo/page.tsx` · `salvarCliente` | DB `prospeccao.test.ts` › "ao excluir o cliente…"; NAV |
+| Só logados acessam; autoria e auditoria | Atendido | RLS e gatilhos em `…10_prospeccao.sql` | DB `prospeccao.test.ts` › "visitante não logado…", "autoria e auditoria" |
+| Leads no backup; backups antigos continuam restauráveis | Atendido | `tabelas_backup` · `restaurar_backup` (`…10_prospeccao.sql`) | DB `backup.test.ts` › "o backup contém todas as tabelas", "backup feito antes da Prospecção…" |
 
 ## Pendências e observações
 

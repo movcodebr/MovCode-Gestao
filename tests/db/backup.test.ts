@@ -45,6 +45,12 @@ beforeAll(async () => {
     );
     await db.query("insert into pausas_lembrete (cliente_id, inicio, fim, motivo) values ($1, '2026-02-01', '2026-02-15', 'acordo')", [cliente]);
     await db.query("update lancamentos set excluido_em = now() where descricao = 'VPS'");
+    await db.query("insert into leads (instagram, nome, etapa, cliente_id, responsavel_id) values ('padaria', 'Padaria', 'fechado', $1, $2)", [
+      cliente,
+      usuario,
+    ]);
+    await db.query("insert into leads (instagram, nome) values ('maria.doces', 'Maria Doces')");
+    await db.query("update prospeccao_config set cidades = array['Ribeirão Preto', 'Sertãozinho']");
   });
 });
 afterAll(() => db.close());
@@ -57,7 +63,7 @@ describe("backup e restauração", () => {
     const b = rows[0].b;
     expect(b.sistema).toBe("movcode-gestao");
     expect(Object.keys(b.tabelas).sort()).toEqual(
-      ["auditoria", "clientes", "documentos", "gastos_recorrentes", "ipca_mensal", "lancamentos", "lembretes_enviados", "mensalidades", "pausas_lembrete", "produtos", "reajustes", "usuarios", "vendas"].sort(),
+      ["auditoria", "clientes", "documentos", "gastos_recorrentes", "ipca_mensal", "lancamentos", "leads", "lembretes_enviados", "mensalidades", "pausas_lembrete", "produtos", "prospeccao_config", "reajustes", "usuarios", "vendas"].sort(),
     );
     expect(b.tabelas.clientes).toHaveLength(2);
     expect(b.tabelas.lancamentos).toHaveLength(3);
@@ -73,11 +79,14 @@ describe("backup e restauração", () => {
       await db.query("update lancamentos set status = 'pago', data_pagamento = '2026-03-01' where descricao = 'Site institucional'");
       await db.query("delete from pausas_lembrete");
       await db.query("insert into produtos (nome, preco_centavos, mensalidade_centavos) values ('Novo', 1, 1)");
+      await db.query("update leads set etapa = 'perdido' where instagram = 'maria.doces'");
+      await db.query("delete from leads where instagram = 'padaria'");
+      await db.query("update prospeccao_config set leads_por_dia = 3");
     });
     expect(await retrato()).not.toEqual(antes);
 
     const r = await db.query<{ c: Record<string, number> }>("select restaurar_backup($1) as c", [JSON.stringify(backup)]);
-    expect(r.rows[0].c).toMatchObject({ clientes: 2, lancamentos: 3, produtos: 6, pausas_lembrete: 1 });
+    expect(r.rows[0].c).toMatchObject({ clientes: 2, lancamentos: 3, produtos: 6, pausas_lembrete: 1, leads: 2, prospeccao_config: 1 });
     expect(await retrato()).toEqual(antes);
   });
 
@@ -98,6 +107,21 @@ describe("backup e restauração", () => {
     backup.tabelas.lancamentos[0].valor_centavos = -5;
     await expect(db.query("select restaurar_backup($1)", [JSON.stringify(backup)])).rejects.toThrow();
     expect(await retrato()).toEqual(antes);
+  });
+
+  it("backup feito antes da Prospecção restaura e mantém os leads atuais", async () => {
+    const backup = (await db.query<{ b: { tabelas: Record<string, unknown> } }>("select exportar_backup() as b")).rows[0].b;
+    delete backup.tabelas.leads;
+    delete backup.tabelas.prospeccao_config;
+    await db.query("insert into leads (instagram, nome) values ('depois.do.backup', 'Novo lead')");
+    await db.query("update clientes set nome = 'Mudou de novo' where documento = $1", [CPF_VALIDO]);
+
+    const r = await db.query<{ c: Record<string, number> }>("select restaurar_backup($1) as c", [JSON.stringify(backup)]);
+    expect(r.rows[0].c).not.toHaveProperty("leads");
+    const { rows: clientes } = await db.query("select nome from clientes where documento = $1", [CPF_VALIDO]);
+    expect(clientes).toEqual([{ nome: "Depois" }]);
+    const { rows: leads } = await db.query("select instagram from leads order by instagram");
+    expect(leads).toEqual([{ instagram: "depois.do.backup" }, { instagram: "maria.doces" }, { instagram: "padaria" }]);
   });
 
   it("usuário logado não consegue exportar nem restaurar diretamente", async () => {

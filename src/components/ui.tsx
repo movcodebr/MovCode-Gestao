@@ -9,17 +9,17 @@ const estilosBotao: Record<Variante, string> = {
   perigo: "bg-perigo text-white hover:opacity-90",
 };
 
+/** Classes de um botão; também servem para links com cara de botão. */
+export function classesBotao(variante: Variante = "primario"): string {
+  return `inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${estilosBotao[variante]}`;
+}
+
 export function Botao({
   variante = "primario",
   className = "",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variante?: Variante }) {
-  return (
-    <button
-      className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${estilosBotao[variante]} ${className}`}
-      {...props}
-    />
-  );
+  return <button className={`${classesBotao(variante)} ${className}`} {...props} />;
 }
 
 export function Campo({
@@ -98,8 +98,15 @@ export function Selecao({
   );
 }
 
-export function Etiqueta({ cor, children }: { cor: "verde" | "vermelho" | "cinza" | "amarelo"; children: ReactNode }) {
+export function Etiqueta({
+  cor,
+  children,
+}: {
+  cor: "verde" | "vermelho" | "cinza" | "amarelo" | "laranja";
+  children: ReactNode;
+}) {
   const cores = {
+    laranja: "bg-destaque/15 text-destaque",
     verde: "bg-sucesso/15 text-sucesso",
     vermelho: "bg-perigo/15 text-perigo",
     amarelo: "bg-alerta/15 text-alerta",
@@ -122,10 +129,7 @@ export function LinkBotao({
   variante?: Variante;
 }) {
   return (
-    <Link
-      href={href}
-      className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition ${estilosBotao[variante]}`}
-    >
+    <Link href={href} className={classesBotao(variante)}>
       {children}
     </Link>
   );

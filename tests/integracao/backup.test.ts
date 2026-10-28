@@ -22,7 +22,7 @@ describe.skipIf(!ativo)("backup (integração)", () => {
   beforeAll(() => {
     admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
     sql("delete from backups; delete from storage.objects where bucket_id = 'backups';");
-    sql("set session_replication_role = replica; delete from lembretes_enviados; delete from reajustes; delete from lancamentos; delete from mensalidades; delete from vendas; delete from pausas_lembrete; delete from clientes;");
+    sql("set session_replication_role = replica; delete from lembretes_enviados; delete from reajustes; delete from lancamentos; delete from mensalidades; delete from vendas; delete from pausas_lembrete; delete from leads; delete from clientes;");
     sql("insert into clientes (nome, telefone, email, documento) values ('Backup Teste', '11987654321', 'b@x.com', '52998224725')");
     sql("insert into lancamentos (tipo, descricao, categoria, valor_centavos, forma_pagamento, vencimento) values ('saida', 'Teste', 'servidor', 123, 'pix', '2026-10-01')");
   });

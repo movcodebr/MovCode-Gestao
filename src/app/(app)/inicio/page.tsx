@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: "Início — Mov Code" };
 const ATALHOS = [
   { href: "/financeiro", titulo: "Financeiro", texto: "Dashboard, vendas e gastos" },
   { href: "/clientes", titulo: "Clientes", texto: "Cadastro e mensalidades" },
+  { href: "/prospeccao", titulo: "Prospecção", texto: "Leads do Instagram e follow-ups do dia" },
   { href: "/produtos", titulo: "Produtos", texto: "Preços e mensalidades" },
   { href: "/documentos", titulo: "Documentos", texto: "Planilhas e arquivos internos" },
 ];
