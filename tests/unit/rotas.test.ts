@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { destinoSeguro, rotaPublica } from "@/lib/rotas";
 
 describe("acesso às rotas", () => {
-  it("só login, recuperação de senha e rotina automática abrem sem login", () => {
-    for (const rota of ["/login", "/esqueci-senha", "/auth/confirmar", "/api/cron/diario"]) {
+  it("só login, recuperação de senha e rotinas automáticas abrem sem login", () => {
+    for (const rota of ["/login", "/esqueci-senha", "/auth/confirmar", "/api/cron/diario", "/api/prospeccao/rotina"]) {
       expect(rotaPublica(rota), rota).toBe(true);
     }
-    for (const rota of ["/", "/inicio", "/financeiro", "/clientes/1", "/documentos", "/redefinir-senha", "/loginx"]) {
+    for (const rota of ["/", "/inicio", "/financeiro", "/clientes/1", "/documentos", "/redefinir-senha", "/loginx", "/prospeccao", "/api/prospeccao"]) {
       expect(rotaPublica(rota), rota).toBe(false);
     }
   });

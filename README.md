@@ -1,6 +1,6 @@
 # Mov Code — Gestão
 
-Sistema web de controle interno da **Mov Code**: financeiro (vendas, gastos, mensalidades, dashboard), produtos, clientes, lembretes de cobrança por e-mail, documentos internos e backup.
+Sistema web de controle interno da **Mov Code**: financeiro (vendas, gastos, mensalidades, dashboard), produtos, clientes, prospecção de leads pelo Instagram, lembretes de cobrança por e-mail, documentos internos e backup.
 
 > **Tecnologia do tamanho do seu negócio.**
 
@@ -22,8 +22,9 @@ Este guia foi escrito para quem **não é especialista**. Siga as seções na or
 10. [Uso no dia a dia](#10-uso-no-dia-a-dia)
 11. [Backup e restauração](#11-backup-e-restauração)
 12. [WhatsApp (para ativar no futuro)](#12-whatsapp-para-ativar-no-futuro)
-13. [Para desenvolvedores](#13-para-desenvolvedores)
-14. [Limitações conhecidas](#14-limitações-conhecidas)
+13. [Prospecção (leads do Instagram)](#13-prospecção-leads-do-instagram)
+14. [Para desenvolvedores](#14-para-desenvolvedores)
+15. [Limitações conhecidas](#15-limitações-conhecidas)
 
 ---
 
@@ -213,6 +214,7 @@ O modelo está em `.env.example` (sem valores reais). **Nunca** coloque senhas e
 | `PAGAMENTO_PIX_CHAVE` | Chave Pix que vai nos lembretes | (a chave) |
 | `PAGAMENTO_PIX_NOME` | Favorecido do Pix | `Vinicius Martins Hallal` |
 | `BACKUP_EMAIL_DESTINO` | Quem recebe o backup mensal | `contato@movcode.com.br` |
+| `PROSPECCAO_TOKEN` | Segredo da busca diária de leads ([seção 13](#13-prospecção-leads-do-instagram)) | texto aleatório longo |
 
 ---
 
@@ -225,6 +227,7 @@ O modelo está em `.env.example` (sem valores reais). **Nunca** coloque senhas e
 - **Reajuste IPCA**: automático na 13ª cobrança de cada mensalidade. Se o Banco Central não responder, o reajuste aparece em **Financeiro → Reajustes IPCA** para você informar o índice.
 - **Lembretes**: no vencimento e a cada 3 dias, até 30 dias de atraso; depois, a cobrança vai para **Contato pessoal** no dashboard. Para negociar prazo, use **Pausar lembretes** na tela do cliente.
 - **Exportar para o contador**: em Lançamentos, filtre o período e clique em **Exportar Excel** ou **Exportar PDF**.
+- **Prospecção**: fila do dia, pipeline e follow-ups dos leads do Instagram (veja a [seção 13](#13-prospecção-leads-do-instagram)).
 - Os textos dos e-mails de lembrete ficam em `src/lib/lembretes/mensagens.ts`; as cores da marca em `src/app/globals.css`.
 
 ---
@@ -234,6 +237,7 @@ O modelo está em `.env.example` (sem valores reais). **Nunca** coloque senhas e
 - **Automático**: todo dia às 9h (guarda os 30 últimos) e um por mês (guarda 12 meses). O mensal também chega por e-mail em `BACKUP_EMAIL_DESTINO`, como anexo `.json.gz` — guarde esses e-mails.
 - **Manual**: tela **Backup → Fazer backup agora** (recomendado antes de mudanças grandes).
 - **Restaurar**: tela **Backup → Restaurar** (de um backup da lista) ou **Restaurar de um arquivo** (por exemplo o anexo do e-mail mensal). É preciso digitar `RESTAURAR`. Antes de restaurar o sistema guarda automaticamente o estado atual, para poder desfazer. A restauração é "tudo ou nada": se algo falhar, nada muda.
+- Os leads e a configuração da Prospecção entram no backup. Restaurar um backup feito antes da Prospecção existir mantém os leads atuais como estão.
 - **O que não entra no backup**: os logins dos usuários (continuam os atuais) e os **arquivos** da tela Documentos (ficam no Storage do Supabase; se forem importantes, guarde cópias também fora do sistema).
 
 ---
@@ -249,7 +253,42 @@ O WhatsApp ficou **desligado** por decisão de projeto; os lembretes saem só po
 
 ---
 
-## 13. Para desenvolvedores
+## 13. Prospecção (leads do Instagram)
+
+A tela **Prospecção** substitui o painel "Prospecção MovCode" que ficava no Claude. Uma tarefa agendada do Claude procura negócios no Instagram em dias úteis de manhã, qualifica, escreve as mensagens e grava os leads novos aqui. **Ninguém recebe mensagem automática**: vocês enviam as DMs à mão, pelo Instagram.
+
+### 13.1 Atualizar o banco (uma vez)
+Se o sistema foi instalado antes da Prospecção, aplique só a migração nova:
+1. Abra o arquivo [`supabase/migrations/20261028000010_prospeccao.sql`](supabase/migrations/20261028000010_prospeccao.sql) no GitHub e clique em **Copy raw file**.
+2. No Supabase, abra **SQL Editor → New query**, cole e clique em **Run**. Deve aparecer **Success. No rows returned**.
+
+(Pelo terminal, `npx supabase db push` faz o mesmo. Num projeto novo, o `instalacao-completa.sql` já inclui a Prospecção.)
+
+### 13.2 Ligar a busca diária
+1. Invente um texto aleatório longo (como no `CRON_SECRET`) e cadastre na Vercel como `PROSPECCAO_TOKEN` (**Settings → Environment Variables**, ambiente *Production*). Faça **Redeploy**.
+2. No ambiente do Claude onde roda a tarefa agendada "Prospecção diária MovCode", cadastre a **mesma** variável `PROSPECCAO_TOKEN` (menu do ambiente → **Edit** → variáveis de ambiente).
+3. Peça ao Claude para a tarefa passar a gravar no sistema. Ela usa o endereço `https://SEU-SISTEMA/api/prospeccao/rotina`:
+   - `GET` (cabeçalho `Authorization: Bearer PROSPECCAO_TOKEN`): configuração da busca, @ já cadastrados, leads por nicho e follow-ups vencidos;
+   - `POST` com `{"leads": [...]}` (até 30 por vez; campos `instagram`, `nome`, `nicho`, `cidade`, `score`, `siteStatus`, `siteUrl`, `whatsapp`, `motivo`, `dor`, `servico`, `mensagem`, `followup1`, `followup2`, `respostaSim`, `linkPrevia`, `fonte`): grava os leads novos como **Novo**. Um @ que já existe nunca é regravado.
+
+Em **Prospecção → Configuração** aparece "Conexão ligada" e a data da última busca. Nessa mesma tela vocês mudam cidades, nichos, quantos leads por dia e as instruções das mensagens; a próxima busca já usa.
+
+### 13.3 Trazer os leads do painel antigo
+Em **Prospecção → Configuração → Trazer os leads do painel antigo**, envie o arquivo `.json` exportado do painel. Leads com o mesmo @ não mudam, então dá para importar de novo sem duplicar. A opção "Trazer também a configuração da busca" copia as cidades, os nichos e as instruções do painel.
+
+### 13.4 No dia a dia
+- **Hoje**: follow-ups vencidos e os melhores leads novos (seus ou sem responsável), até a quantidade de leads por dia.
+- Ao abrir um lead aparece o **texto da vez** (abertura, follow-up ou resposta) para **Copiar**, o botão **Abrir Instagram** e o botão do próximo passo:
+  - **Enviei a mensagem**: o lead vai para Abordado, o 1º follow-up fica para daqui a 3 dias e você vira o responsável;
+  - **Enviei o follow-up**: o 2º follow-up fica para 4 dias depois; depois do 2º, o sistema espera mais 5 dias e sugere mover para **Perdido**;
+  - **Respondeu: quer ver a prévia**: o lead vai para Respondeu e o texto da vez passa a ser a resposta com valores e o link da prévia.
+- **Responsável**: cada lead pode ter um dono, para os dois sócios não mandarem mensagem para o mesmo negócio. "Assumir" e "Liberar" ficam na tela do lead.
+- **Virou cliente?** **Cadastrar como cliente** abre o cadastro de cliente com nome e WhatsApp preenchidos; ao salvar, o lead vai para Fechado e fica ligado ao cliente.
+- **Descartar** apaga o lead. A busca diária pode encontrá-lo de novo; para ele não voltar, prefira mover para **Perdido**.
+
+---
+
+## 14. Para desenvolvedores
 
 **Stack:** Next.js 16 (App Router, TypeScript) · Tailwind CSS · Supabase (PostgreSQL, Auth, Storage) · Vercel (hospedagem e cron) · Resend · Vitest + PGlite.
 
@@ -295,10 +334,11 @@ O CI (GitHub Actions) roda lint, tipos, testes e build a cada push.
 
 ---
 
-## 14. Limitações conhecidas
+## 15. Limitações conhecidas
 
 - **Planos gratuitos**: os termos do plano Hobby da Vercel preveem uso não comercial; o cron roda 1x por dia e pode atrasar até ~1h. O Supabase Free pode pausar projetos sem uso — a rotina diária mantém o projeto ativo, mas vale conferir de vez em quando.
 - **Lembretes perdidos**: se a rotina não rodar num dia, os lembretes daquele dia não são reenviados depois (as cobranças, sim, são recuperadas).
 - **Backup** não inclui os arquivos da tela Documentos nem os logins.
 - **WhatsApp** desativado (ver seção 12).
+- **Prospecção**: a busca de leads roda numa tarefa agendada do Claude, fora do sistema; se ela não rodar, só faltam leads novos naquele dia (a fila e os follow-ups continuam). O painel antigo gerava novas versões das mensagens com IA; aqui as mensagens vêm prontas da busca e podem ser editadas à mão (gerar com IA exigiria uma chave paga da API do Claude).
 - Restaurar backup enviando arquivo aceita até 4 MB (o backup compactado de vários anos de dados de uma pequena empresa costuma ter poucas centenas de KB).

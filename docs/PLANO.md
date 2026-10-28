@@ -216,3 +216,23 @@ Depois das fases: **Etapa 4** (README completo para não especialistas) e **Etap
 - **Backup** cobre os dados do banco; os arquivos da tela Documentos ficam no Storage e não são copiados no backup diário (limite de 1 GB do plano gratuito).
 - **Lembretes perdidos**: se a rotina diária não rodar num dia, os lembretes daquele dia não são reenviados depois (mesma lógica de "não retroativo"); as cobranças, por outro lado, são recuperadas.
 - **WhatsApp**: adiado por decisão do usuário; o canal existe no código, desativado.
+
+---
+
+## 8. Prospecção (integração do painel "Prospecção MovCode")
+
+O painel de prospecção que ficava num artefato do Claude passou a ser um módulo do sistema (out/2026). A busca de leads continua numa tarefa agendada do Claude, que agora grava no sistema.
+
+| # | Item | Decisão |
+|---|---|---|
+| 29 | Onde ficam os leads | Tabela `leads` no Supabase, um lead por @ do Instagram (`instagram` único, minúsculas, sem @). Configuração da busca numa linha só (`prospeccao_config`) |
+| 30 | Funil | Etapas `novo` → `abordado` → `respondeu` → `reuniao` → `proposta` → `fechado` / `perdido` |
+| 31 | Follow-ups | "Enviei a mensagem" agenda o 1º follow-up em **3 dias**; o 1º agenda o 2º em **4 dias**; depois do 2º, espera **5 dias** e sugere Perdido. No máximo 2 follow-ups. A ação só é gravada se o lead ainda está como a tela mostrava (clique repetido não conta duas vezes) |
+| 32 | Responsável | Opcional. Quem envia a 1ª mensagem vira o responsável se não houver um. "Hoje" mostra só os leads do usuário ou sem responsável |
+| 33 | Busca diária | Tarefa agendada do Claude chama `/api/prospeccao/rotina` (GET lê a configuração e os @ existentes; POST grava até 30 leads novos), protegida por `PROSPECCAO_TOKEN`. Grava sempre como `novo`; um @ existente nunca é regravado |
+| 34 | Painel antigo | Importação de arquivo `.json` exportado do painel (leads com andamento + configuração), repetível sem duplicar |
+| 35 | Lead que vira cliente | "Cadastrar como cliente" preenche nome e WhatsApp; ao salvar, o lead vai para `fechado` com `cliente_id` |
+| 36 | Descartar | Apaga o lead (a busca pode reencontrá-lo); para não voltar, mover para Perdido |
+| 37 | Backup | `leads` e `prospeccao_config` entram no backup; backups antigos (sem essas tabelas) continuam restauráveis e mantêm os leads atuais |
+| 38 | IA na tela | Sem "gerar outra versão" da mensagem: exigiria chave paga da API (decisão 6, só planos gratuitos). As mensagens vêm prontas da busca e são editáveis |
+| 39 | Links | `site_url` e `link_previa` só aceitam http(s) (no banco e na leitura dos leads), porque viram links na tela |

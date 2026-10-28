@@ -34,6 +34,12 @@ export async function salvarCliente(
     }
     return { erro: mensagemErroBanco(error, { duplicado: DUPLICADO }), valores };
   }
+  // Cadastro a partir de um lead da prospecção: liga o lead ao cliente e fecha o lead
+  const leadId = String(dados.get("lead_id") ?? "");
+  if (!id && leadId) {
+    await supabase.from("leads").update({ cliente_id: data.id, etapa: "fechado" }).eq("id", leadId);
+    revalidatePath("/prospeccao", "layout");
+  }
   revalidatePath("/clientes");
   redirect(`/clientes/${data.id}`);
 }

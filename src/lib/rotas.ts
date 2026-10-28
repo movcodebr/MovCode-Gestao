@@ -1,5 +1,5 @@
 /** Rotas que podem ser abertas sem login. */
-export const ROTAS_PUBLICAS = ["/login", "/esqueci-senha", "/auth/confirmar", "/api/cron"];
+export const ROTAS_PUBLICAS = ["/login", "/esqueci-senha", "/auth/confirmar", "/api/cron", "/api/prospeccao/rotina"];
 
 export function rotaPublica(caminho: string): boolean {
   return ROTAS_PUBLICAS.some((rota) => caminho === rota || caminho.startsWith(`${rota}/`));
